@@ -100,13 +100,6 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
     const audioBuffer = await fsp.readFile(convertedFilePath);
     const audioBlob = new Blob([audioBuffer], { type: "audio/mp3" });
 
-    // const transcription = await elevenlabs.speechToText.convert({
-    //   file: audioBlob,
-    //   modelId: "scribe_v1", // Correct parameter name: modelId (not model_id)
-    //   tagAudioEvents: true, // Tag audio events like laughter, applause, etc.
-    //   languageCode: "eng", // Language of the audio file. Set to null for auto-detection
-    //   diarize: true, // Whether to annotate who is speaking
-    // });
 
         const transcription = await elevenlabs.speechToText.convert({
       file: audioBlob,
