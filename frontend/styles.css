@@ -1,0 +1,227 @@
+/* Floating Voice Recorder Styles */
+
+#floating-voice-recorder {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647; /* Maximum z-index */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.recorder-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 16px;
+  min-width: 80px;
+  max-width: 300px;
+}
+
+/* Microphone Button */
+.mic-button {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+}
+
+.mic-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+}
+
+.mic-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+/* Recording Indicator */
+.recording-indicator {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.pulse-ring {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #ff4444;
+  border-radius: 50%;
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+  }
+}
+
+.recording-time {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ff4444;
+  font-variant-numeric: tabular-nums;
+}
+
+.stop-button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stop-button:hover {
+  background: #ff2222;
+  transform: scale(1.1);
+}
+
+/* Processing Indicator */
+.processing-indicator {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.processing-indicator span {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Response Display */
+.response-display {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+  max-width: 280px;
+}
+
+.response-text {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+  border: 1px solid #e9ecef;
+  word-wrap: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.close-response {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: all 0.2s ease;
+}
+
+.close-response:hover {
+  background: #495057;
+  transform: scale(1.1);
+}
+
+/* Drag Handle */
+.drag-handle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #ccc;
+  cursor: grab;
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .recorder-container {
+    background: rgba(28, 28, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .response-text {
+    background: #1c1c1e;
+    color: #f2f2f7;
+    border: 1px solid #38383a;
+  }
+  
+  .processing-indicator span {
+    color: #f2f2f7;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #floating-voice-recorder {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .recorder-container {
+    padding: 12px;
+  }
+  
+  .mic-button {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mic-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
