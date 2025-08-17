@@ -168,7 +168,13 @@ class FloatingVoiceRecorder {
         const audioBlob = new Blob(this.audioChunks, { 
           type: this.mediaRecorder.mimeType || mimeType || 'audio/webm' 
         });
-        
+
+    //  const audioUrl = URL.createObjectURL(audioBlob);
+    //   const a = document.createElement('a');
+    //   a.href = audioUrl;
+    //   a.download = 'recorded_audio.webm';
+    //   a.click();
+        //  till here  it  is  working fine   i can hear  the   audio  when downkloaded 
         console.log("Final blob created:", {
           size: audioBlob.size,
           type: audioBlob.type,
@@ -287,7 +293,16 @@ class FloatingVoiceRecorder {
 
       // Use FileReader to convert Blob to ArrayBuffer - more reliable method
       const reader = new FileReader();
+
+    //        const audioUrl = URL.createObjectURL(audioBlob);
+    //   const a = document.createElement('a');
+    //   a.href = audioUrl;
+    //   a.download = 'recorded_audio_in_while_sendting.webm';
+    //   a.click();
       
+
+    // fine  till here it  is  working fine   i can hear  the   audio  when downkloaded
+    
       reader.onload = () => {
         console.log("FileReader loaded, ArrayBuffer size:", reader.result.byteLength);
         

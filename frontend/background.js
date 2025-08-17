@@ -100,7 +100,7 @@ async function uploadAudioToServer(audioBlob) {
   console.log('Uploading audio to server...');
   
   try {
-    const response = await fetch('http://localhost:3000/transcribe', {
+    const response = await fetch('https://vibewithmic-jj36.vercel.app/transcribe', {
       method: 'POST',
       body: formData,
       // Don't set Content-Type header - let browser set it with boundary
