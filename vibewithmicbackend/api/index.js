@@ -178,7 +178,4 @@ app.use((error, req, res, next) => {
 
 // Export for Vercel
 // export const handler = serverless(app);
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+export default app;
