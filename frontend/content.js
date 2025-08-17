@@ -106,42 +106,123 @@ class FloatingVoiceRecorder {
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          sampleRate: 44100
+          sampleRate: 44100,
+          channelCount: 1
         }
       });
 
       this.audioChunks = [];
+      
+      // Try different MIME types for better compatibility
+      let mimeType = '';
+      const supportedTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+        'audio/wav'
+      ];
+
+      for (const type of supportedTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          console.log("Using MIME type:", mimeType);
+          break;
+        }
+      }
+
+      if (!mimeType) {
+        console.warn("No supported MIME type found, using default");
+      }
+
       this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: mimeType || undefined,
+        bitsPerSecond: 128000 // 128 kbps
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
+        console.log('Audio chunk received:', {
+          size: event.data.size,
+          type: event.data.type,
+          timestamp: Date.now()
+        });
+        
         if (event.data.size > 0) {
           this.audioChunks.push(event.data);
         }
       };
 
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        console.log("MediaRecorder stopped, chunks:", this.audioChunks.length);
+        
+        if (this.audioChunks.length === 0) {
+          console.error("No audio chunks captured!");
+          this.showResponse({ error: "No audio was recorded. Please try again." });
+          return;
+        }
+
+        // Calculate total size
+        const totalSize = this.audioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+        console.log("Total audio size from chunks:", totalSize, "bytes");
+
+        const audioBlob = new Blob(this.audioChunks, { 
+          type: this.mediaRecorder.mimeType || mimeType || 'audio/webm' 
+        });
+        
+        console.log("Final blob created:", {
+          size: audioBlob.size,
+          type: audioBlob.type,
+          expectedSize: totalSize
+        });
+
+        // Ensure minimum recording length
+        if (audioBlob.size < 2048) { // Increased minimum to 2KB
+          console.error("Audio too small:", audioBlob.size, "bytes");
+          this.showResponse({ error: "Recording too short or empty. Please record for at least 2 seconds." });
+          return;
+        }
+
         this.processAudio(audioBlob);
+        // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
       };
 
-      this.mediaRecorder.start(1000); // Collect data every second
+      this.mediaRecorder.onerror = (event) => {
+        console.error("MediaRecorder error:", event.error);
+        this.showResponse({ error: "Recording failed: " + event.error.message });
+      };
+
+      // Start recording - collect data more frequently for better capture
+      this.mediaRecorder.start(250); // Collect data every 250ms
       this.isRecording = true;
       this.recordingStartTime = Date.now();
+      
+      console.log("Recording started with:", {
+        mimeType: this.mediaRecorder.mimeType,
+        state: this.mediaRecorder.state
+      });
       
       this.showRecordingUI();
       this.startTimer();
 
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Microphone access denied or not available');
+      this.showResponse({ error: 'Microphone access denied or not available: ' + error.message });
     }
   }
 
   stopRecording() {
     if (this.mediaRecorder && this.isRecording) {
+      // Ensure we have recorded for at least 1 second
+      const recordingDuration = Date.now() - this.recordingStartTime;
+      if (recordingDuration < 1000) {
+        this.showResponse({ error: "Please record for at least 1 second." });
+        this.mediaRecorder.stop();
+        this.isRecording = false;
+        this.stopTimer();
+        return;
+      }
+
       this.mediaRecorder.stop();
       this.isRecording = false;
       this.stopTimer();
@@ -168,25 +249,74 @@ class FloatingVoiceRecorder {
 
   async processAudio(audioBlob) {
     try {
-      // Send to background script to upload
-      
-      const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(
-          { type: 'UPLOAD_AUDIO', audioBlob },
-          (response) => {
-            if (response.success) {
-              resolve(response.data);
-            } else {
-              reject(new Error(response.error));
-            }
-          }
-        );
+      console.log("Processing audio... sending to background js");
+      console.log("Original blob size:", audioBlob.size, "bytes");
+      console.log("Original blob type:", audioBlob.type);
+
+      // Check if Chrome extension APIs are available
+      if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.connect) {
+        console.error("Chrome extension APIs not available");
+        this.showResponse({ error: "Extension APIs not available. Please reload the page and try again." });
+        return;
+      }
+
+      // Open a persistent port with error handling
+      let port;
+      try {
+        port = chrome.runtime.connect({ name: "audioChannel" });
+      } catch (connectError) {
+        console.error("Failed to connect to background script:", connectError);
+        this.showResponse({ error: "Failed to connect to extension background. Please reload the page." });
+        return;
+      }
+
+      // Handle port disconnection
+      port.onDisconnect.addListener(() => {
+        console.log("Port disconnected");
+        if (chrome.runtime.lastError) {
+          console.error("Port disconnect error:", chrome.runtime.lastError);
+          this.showResponse({ error: "Connection lost. Please try again." });
+        }
       });
 
-      this.showResponse(response);
+      // Listen for messages coming back from background
+      port.onMessage.addListener((msg) => {
+        console.log("Response from background:", msg);
+        this.showResponse(msg);
+      });
+
+      // Use FileReader to convert Blob to ArrayBuffer - more reliable method
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        console.log("FileReader loaded, ArrayBuffer size:", reader.result.byteLength);
+        
+        try {
+          port.postMessage({
+            type: "UPLOAD_AUDIO",
+            audioArrayBuffer: reader.result,
+            mimeType: audioBlob.type,
+            size: audioBlob.size,
+            originalSize: reader.result.byteLength
+          });
+          console.log("Message sent to background script");
+        } catch (postError) {
+          console.error("Failed to send message:", postError);
+          this.showResponse({ error: "Failed to send audio data. Please try again." });
+        }
+      };
+
+      reader.onerror = () => {
+        console.error("FileReader error:", reader.error);
+        this.showResponse({ error: "Failed to read audio data. Please try again." });
+      };
+
+      // Start reading the blob as ArrayBuffer
+      reader.readAsArrayBuffer(audioBlob);
+
     } catch (error) {
-      console.error('Processing failed:', error);
-      this.showResponse({ error: 'Failed to process audio. Please try again.' });
+      console.error("Processing failed:", error);
+      this.showResponse({ error: "Failed to process audio. Please try again." });
     }
   }
 
@@ -223,10 +353,29 @@ class FloatingVoiceRecorder {
 }
 
 // Initialize the floating voice recorder when content script loads
+function initializeRecorder() {
+  // Check if we're in a proper web page context
+  if (typeof chrome === 'undefined' || !chrome.runtime) {
+    console.error("Chrome extension APIs not available. Content script may not be properly loaded.");
+    return;
+  }
+
+  // Check if already initialized
+  if (window.voiceRecorderInstance) {
+    console.log("Voice recorder already initialized");
+    return;
+  }
+
+  try {
+    window.voiceRecorderInstance = new FloatingVoiceRecorder();
+    console.log("Voice recorder initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize voice recorder:", error);
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    new FloatingVoiceRecorder();
-  });
+  document.addEventListener('DOMContentLoaded', initializeRecorder);
 } else {
-  new FloatingVoiceRecorder();
+  initializeRecorder();
 }
