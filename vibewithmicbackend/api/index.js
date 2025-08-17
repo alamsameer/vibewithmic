@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import fsp from "fs/promises"; // <-- for async/await fs methods
 import path from "path";
-
+import serverless from "serverless-http";
 
 
 
@@ -17,7 +17,8 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 // Initial setup
 dotenv.config();
 const app = express();
-const UPLOADS_DIR = "uploads";
+const UPLOADS_DIR = "/tmp"; // use /tmp on Vercel
+
 
 
 // CORS middleware - Allow requests from your frontend
@@ -174,8 +175,14 @@ app.use((error, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📝 Upload endpoint: POST http://localhost:${PORT}/transcribe`);
-});
+
+// Export for Vercel
+export const handler = serverless(app);
+
+// Run locally if not on Vercel
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}
