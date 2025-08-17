@@ -11,7 +11,7 @@
   ],
   
   "host_permissions": [
-    "https://your-server.com/*"
+    "https://vibewithmic-jj36.vercel.app/*"
   ],
   
   "background": {

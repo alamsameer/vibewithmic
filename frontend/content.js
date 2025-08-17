@@ -169,6 +169,7 @@ class FloatingVoiceRecorder {
   async processAudio(audioBlob) {
     try {
       // Send to background script to upload
+      
       const response = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
           { type: 'UPLOAD_AUDIO', audioBlob },

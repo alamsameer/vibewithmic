@@ -93,6 +93,8 @@ function toggleFloatingMic() {
 
 async function requestMicrophonePermission() {
   try {
+    console.log('Requesting microphone permission...');
+    // Request microphone access
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(track => track.stop()); // Stop immediately
     return true;

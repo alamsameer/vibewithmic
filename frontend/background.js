@@ -22,9 +22,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function uploadAudioToServer(audioBlob) {
   const formData = new FormData();
   formData.append('audio', audioBlob, 'recording.webm');
-  
+  console.log('Uploading audio to server...');
   try {
-    const response = await fetch('https://your-server.com/api/audio', {
+    const response = await fetch('https://vibewithmic-jj36.vercel.app/transcribe', {
       method: 'POST',
       body: formData,
       headers: {
