@@ -16,49 +16,241 @@ class FloatingVoiceRecorder {
     this.attachEventListeners();
   }
 
-  createFloatingUI() {
-    // Remove existing UI if present
-    const existing = document.querySelector('#floating-voice-recorder');
-    if (existing) existing.remove();
+createFloatingUI() {
+  // Remove existing UI if present
+  const existing = document.querySelector('#floating-voice-recorder');
+  if (existing) existing.remove();
 
-    const container = document.createElement('div');
-    container.id = 'floating-voice-recorder';
-    container.innerHTML = `
-      <div class="recorder-container">
-        <div class="mic-button" id="micButton">
-          <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-            <path d="M17.3 11c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-          </svg>
-        </div>
-        
-        <div class="recording-indicator" id="recordingIndicator">
-          <div class="pulse-ring"></div>
-          <div class="recording-time" id="recordingTime">00:00</div>
-          <button class="stop-button" id="stopButton">⏹</button>
-        </div>
-        
-        <div class="processing-indicator" id="processingIndicator">
-          <div class="spinner"></div>
-          <span>Processing...</span>
-        </div>
-        
-
-        <div class="response-display" id="responseDisplay">
-          <div class="response-text" id="responseText"></div>
-          <div class="response-actions">
-            <button class="copy-button" id="copyButton">📋</button>
-            <button class="close-response" id="closeResponse">✕</button>
-          </div>
+  const container = document.createElement('div');
+  container.id = 'floating-voice-recorder';
+  container.innerHTML = `
+    <style>
+      #floating-voice-recorder {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      
+      .recorder-container {
+        background: #2a2a2a;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        min-width: 60px;
+        transition: all 0.3s ease;
+      }
+      
+      .mic-button {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b6b, #ff5252);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0;
+        border: 3px solid #444;
+      }
+      
+      .mic-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+      }
+      
+      .mic-icon {
+        width: 24px;
+        height: 24px;
+        color: white;
+      }
+      
+      .recording-indicator {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: #2a2a2a;
+        min-width: 180px;
+      }
+      
+      .pulse-ring {
+        width: 60px;
+        height: 60px;
+        border: 3px solid #ff6b6b;
+        border-radius: 50%;
+        animation: pulse 1.5s ease-out infinite;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      
+      .pulse-ring::before {
+        content: '🎤';
+        font-size: 20px;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.3); opacity: 0; }
+      }
+      
+      .recording-time {
+        color: #ff6b6b;
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 12px;
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+      
+      .stop-button {
+        background: #ff4444;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+      
+      .stop-button:hover {
+        background: #ff2222;
+        transform: translateY(-1px);
+      }
+      
+      .processing-indicator {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: #2a2a2a;
+        min-width: 180px;
+        color: #ccc;
+      }
+      
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #444;
+        border-top: 3px solid #ff6b6b;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 12px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .response-display {
+        display: none;
+        background: #2a2a2a;
+        min-width: 280px;
+        max-width: 400px;
+      }
+      
+      .response-text {
+        color: #fff;
+        padding: 20px;
+        font-size: 14px;
+        line-height: 1.4;
+        border-left: 3px solid #ff6b6b;
+        background: #333;
+        margin: 0;
+        word-wrap: break-word;
+      }
+      
+      .response-actions {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #2a2a2a;
+        border-top: 1px solid #444;
+      }
+      
+      .copy-button, .close-response {
+        background: #444;
+        border: none;
+        border-radius: 6px;
+        color: #ccc;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s ease;
+      }
+      
+      .copy-button:hover {
+        background: #555;
+        color: #fff;
+      }
+      
+      .close-response {
+        background: #ff4444;
+        color: white;
+      }
+      
+      .close-response:hover {
+        background: #ff2222;
+      }
+      
+      .drag-handle {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        color: #666;
+        cursor: move;
+        font-size: 12px;
+        user-select: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      
+      .recorder-container:hover .drag-handle {
+        opacity: 1;
+      }
+    </style>
+    
+    <div class="recorder-container">
+      <div class="mic-button" id="micButton">
+        <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17.3 11c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+        </svg>
       </div>
-        
-        <div class="drag-handle" id="dragHandle">⋮⋮</div>
+      
+      <div class="recording-indicator" id="recordingIndicator">
+        <div class="pulse-ring"></div>
+        <div class="recording-time" id="recordingTime">00:00</div>
+        <button class="stop-button" id="stopButton"></button>
       </div>
-    `;
+      
+      <div class="processing-indicator" id="processingIndicator">
+        <div class="spinner"></div>
+        <span>Processing...</span>
+      </div>
+      
+      <div class="response-display" id="responseDisplay">
+        <div class="response-text" id="responseText"></div>
+        <div class="response-actions">
+          <button class="copy-button" id="copyButton">📋 Copy</button>
+          <button class="close-response" id="closeResponse">✕</button>
+        </div>
+      </div>
+      
+      <div class="drag-handle" id="dragHandle">⋮⋮</div>
+    </div>
+  `;
 
-    document.body.appendChild(container);
-    this.makeFloatingUIDraggable();
-  }
+  document.body.appendChild(container);
+  this.makeFloatingUIDraggable();
+}
 
   attachEventListeners() {
     const micButton = document.getElementById('micButton');
