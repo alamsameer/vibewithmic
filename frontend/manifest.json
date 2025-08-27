@@ -3,21 +3,20 @@
   "name": "Voice Recorder Extension",
   "version": "1.0",
   "description": "Floating microphone for voice recording",
-  
+
   "permissions": [
     "activeTab",
-    "storage",
     "scripting"
   ],
-  
+
   "host_permissions": [
     "https://vibewithmic-jj36.vercel.app/*"
   ],
-  
+
   "background": {
     "service_worker": "background.js"
   },
-  
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -26,8 +25,15 @@
       "run_at": "document_end"
     }
   ],
-  
+
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   }
 }

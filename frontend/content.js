@@ -43,10 +43,14 @@ class FloatingVoiceRecorder {
           <span>Processing...</span>
         </div>
         
+
         <div class="response-display" id="responseDisplay">
           <div class="response-text" id="responseText"></div>
-          <button class="close-response" id="closeResponse">✕</button>
-        </div>
+          <div class="response-actions">
+            <button class="copy-button" id="copyButton">📋</button>
+            <button class="close-response" id="closeResponse">✕</button>
+          </div>
+      </div>
         
         <div class="drag-handle" id="dragHandle">⋮⋮</div>
       </div>
@@ -60,10 +64,13 @@ class FloatingVoiceRecorder {
     const micButton = document.getElementById('micButton');
     const stopButton = document.getElementById('stopButton');
     const closeResponse = document.getElementById('closeResponse');
+    const copyButton = document.getElementById('copyButton');
+
 
     micButton.addEventListener('click', () => this.startRecording());
     stopButton.addEventListener('click', () => this.stopRecording());
     closeResponse.addEventListener('click', () => this.hideResponse());
+    copyButton.addEventListener('click', () => this.copyResponse());
   }
 
   makeFloatingUIDraggable() {
@@ -169,12 +176,6 @@ class FloatingVoiceRecorder {
           type: this.mediaRecorder.mimeType || mimeType || 'audio/webm' 
         });
 
-    //  const audioUrl = URL.createObjectURL(audioBlob);
-    //   const a = document.createElement('a');
-    //   a.href = audioUrl;
-    //   a.download = 'recorded_audio.webm';
-    //   a.click();
-        //  till here  it  is  working fine   i can hear  the   audio  when downkloaded 
         console.log("Final blob created:", {
           size: audioBlob.size,
           type: audioBlob.type,
@@ -291,44 +292,44 @@ class FloatingVoiceRecorder {
         this.showResponse(msg);
       });
 
-      // Use FileReader to convert Blob to ArrayBuffer - more reliable method
-      const reader = new FileReader();
-
-    //        const audioUrl = URL.createObjectURL(audioBlob);
-    //   const a = document.createElement('a');
-    //   a.href = audioUrl;
-    //   a.download = 'recorded_audio_in_while_sendting.webm';
-    //   a.click();
-      
-
     // fine  till here it  is  working fine   i can hear  the   audio  when downkloaded
-    
-      reader.onload = () => {
-        console.log("FileReader loaded, ArrayBuffer size:", reader.result.byteLength);
-        
-        try {
-          port.postMessage({
-            type: "UPLOAD_AUDIO",
-            audioArrayBuffer: reader.result,
-            mimeType: audioBlob.type,
-            size: audioBlob.size,
-            originalSize: reader.result.byteLength
-          });
-          console.log("Message sent to background script");
-        } catch (postError) {
-          console.error("Failed to send message:", postError);
-          this.showResponse({ error: "Failed to send audio data. Please try again." });
+    const formData = new FormData();
+      // Determine file extension based on MIME type
+  let extension = 'webm';
+  if (audioBlob.type.includes('mp4')) {
+    extension = 'mp4';
+  } else if (audioBlob.type.includes('wav')) {
+    extension = 'wav';
+  } else if (audioBlob.type.includes('ogg')) {
+    extension = 'ogg';
+  }
+  
+  const filename = `recording_${Date.now()}.${extension}`;
+  console.log('Using filename:', filename);
+  
+  formData.append("file", audioBlob, filename);
+    try {
+    const response = await fetch('https://vibewithmic-jj36.vercel.app/transcribe', {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header - let browser set it with boundary
+    });
+
+    console.log("Server response:", response);
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        this.showResponse({ error: `Server error: ${response.status} - ${errorText}` });
+        return;
         }
-      };
-
-      reader.onerror = () => {
-        console.error("FileReader error:", reader.error);
-        this.showResponse({ error: "Failed to read audio data. Please try again." });
-      };
-
-      // Start reading the blob as ArrayBuffer
-      reader.readAsArrayBuffer(audioBlob);
-
+        const result = await response.json();   
+        console.log("Transcription result:", result);
+        this.showResponse(result);
+}catch (error) {
+        console.error("Processing failed:", error);
+        this.showResponse({ error: "Failed to process audio. Please try again." });
+        return;
+        }
     } catch (error) {
       console.error("Processing failed:", error);
       this.showResponse({ error: "Failed to process audio. Please try again." });
@@ -365,6 +366,29 @@ class FloatingVoiceRecorder {
     document.getElementById('processingIndicator').style.display = 'none';
     document.getElementById('responseDisplay').style.display = 'none';
   }
+  copyResponse() {
+  const responseText = document.getElementById('responseText').textContent;
+  if (responseText) {
+    navigator.clipboard.writeText(responseText).then(() => {
+      // Visual feedback
+      const copyButton = document.getElementById('copyButton');
+      const originalText = copyButton.textContent;
+      copyButton.textContent = '✓';
+      setTimeout(() => {
+        copyButton.textContent = originalText;
+      }, 1000);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = responseText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    });
+  }
+}
 }
 
 // Initialize the floating voice recorder when content script loads
