@@ -17,7 +17,7 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 // Initial setup
 dotenv.config();
 const app = express();
-const UPLOADS_DIR = "/tmp"; // use /tmp on Vercel
+const UPLOADS_DIR = "/tmp/"; // use /tmp on Vercel
 
 
 
@@ -74,7 +74,7 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
     console.log(
       `Received file: ${req.file.originalname}. Starting conversion to MP3...`
     );
-
+    
     // 1. Convert the uploaded file to MP3 using ffmpeg
     await new Promise((resolve, reject) => {
       ffmpeg(originalFilePath)
@@ -145,7 +145,7 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
     setTimeout(async () => {
       try {
         if (fs.existsSync(originalFilePath)) {
-          await fsp.unlink(originalFilePath);
+          // await fsp.unlink(originalFilePath);
           console.log(`Deleted original file: ${originalFilePath}`);
         }
       } catch (err) {
@@ -154,7 +154,7 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
       
       try {
         if (fs.existsSync(convertedFilePath)) {
-          await fsp.unlink(convertedFilePath);
+          // await fsp.unlink(convertedFilePath);
           console.log(`Deleted converted file: ${convertedFilePath}`);
         }
       } catch (err) {
