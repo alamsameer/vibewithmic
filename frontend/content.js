@@ -67,44 +67,61 @@ createFloatingUI() {
         color: white;
       }
       
-      .recording-indicator {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        background: #2a2a2a;
-        min-width: 180px;
-      }
+
       
       .pulse-ring {
-        width: 60px;
+        width: 120px;
         height: 60px;
-        border: 3px solid #ff6b6b;
-        border-radius: 50%;
-        animation: pulse 1.5s ease-out infinite;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
       }
       
-      .pulse-ring::before {
-        content: '🎤';
-        font-size: 20px;
+      .sound-waves {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        height: 40px;
       }
       
-      @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(1.3); opacity: 0; }
+      .wave-bar {
+        width: 3px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 2px;
+        animation: wave 1.5s ease-in-out infinite;
+      }
+      
+      .wave-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+      .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+      .wave-bar:nth-child(3) { height: 30px; animation-delay: 0.2s; }
+      .wave-bar:nth-child(4) { height: 25px; animation-delay: 0.3s; }
+      .wave-bar:nth-child(5) { height: 35px; animation-delay: 0.4s; }
+      .wave-bar:nth-child(6) { height: 40px; animation-delay: 0.5s; }
+      .wave-bar:nth-child(7) { height: 30px; animation-delay: 0.6s; }
+      .wave-bar:nth-child(8) { height: 25px; animation-delay: 0.7s; }
+      .wave-bar:nth-child(9) { height: 35px; animation-delay: 0.8s; }
+      .wave-bar:nth-child(10) { height: 20px; animation-delay: 0.9s; }
+      .wave-bar:nth-child(11) { height: 15px; animation-delay: 1s; }
+      .wave-bar:nth-child(12) { height: 25px; animation-delay: 1.1s; }
+      .wave-bar:nth-child(13) { height: 30px; animation-delay: 1.2s; }
+      .wave-bar:nth-child(14) { height: 20px; animation-delay: 1.3s; }
+      .wave-bar:nth-child(15) { height: 10px; animation-delay: 1.4s; }
+      
+      @keyframes wave {
+        0%, 100% { transform: scaleY(0.3); opacity: 0.7; }
+        50% { transform: scaleY(1); opacity: 1; }
       }
       
       .recording-time {
-        color: #ff6b6b;
+        color: white;
         font-weight: 600;
         font-size: 16px;
         margin-bottom: 12px;
         font-family: 'Monaco', 'Menlo', monospace;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
       
       .stop-button {
@@ -226,7 +243,25 @@ createFloatingUI() {
       </div>
       
       <div class="recording-indicator" id="recordingIndicator">
-        <div class="pulse-ring"></div>
+        <div class="pulse-ring">
+          <div class="sound-waves" id="soundWaves">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+        </div>
         <div class="recording-time" id="recordingTime">00:00</div>
         <button class="stop-button" id="stopButton"></button>
       </div>
@@ -239,8 +274,8 @@ createFloatingUI() {
       <div class="response-display" id="responseDisplay">
         <div class="response-text" id="responseText"></div>
         <div class="response-actions">
-          <button class="copy-button" id="copyButton">📋 Copy</button>
-          <button class="close-response" id="closeResponse">✕</button>
+          <button class="copy-button" id="copyButton">📋</button>
+          <button class="close-response" id="closeResponse">✕ </button>
         </div>
       </div>
       
@@ -251,19 +286,17 @@ createFloatingUI() {
   document.body.appendChild(container);
   this.makeFloatingUIDraggable();
 }
+attachEventListeners() {
+  const micButton = document.getElementById('micButton');
+  const stopButton = document.getElementById('stopButton');
+  const closeResponse = document.getElementById('closeResponse');
+  const copyButton = document.getElementById('copyButton');
 
-  attachEventListeners() {
-    const micButton = document.getElementById('micButton');
-    const stopButton = document.getElementById('stopButton');
-    const closeResponse = document.getElementById('closeResponse');
-    const copyButton = document.getElementById('copyButton');
-
-
-    micButton.addEventListener('click', () => this.startRecording());
-    stopButton.addEventListener('click', () => this.stopRecording());
-    closeResponse.addEventListener('click', () => this.hideResponse());
-    copyButton.addEventListener('click', () => this.copyResponse());
-  }
+  micButton.addEventListener('click', () => this.startRecording());
+  stopButton.addEventListener('click', () => this.stopRecording());
+  closeResponse.addEventListener('click', () => this.hideResponse());
+  copyButton.addEventListener('click', () => this.copyResponse());
+}
 
   makeFloatingUIDraggable() {
     const container = document.querySelector('#floating-voice-recorder');
@@ -558,28 +591,70 @@ createFloatingUI() {
     document.getElementById('processingIndicator').style.display = 'none';
     document.getElementById('responseDisplay').style.display = 'none';
   }
-  copyResponse() {
+async copyResponse() {
   const responseText = document.getElementById('responseText').textContent;
-  if (responseText) {
-    navigator.clipboard.writeText(responseText).then(() => {
-      // Visual feedback
-      const copyButton = document.getElementById('copyButton');
-      const originalText = copyButton.textContent;
-      copyButton.textContent = '✓';
-      setTimeout(() => {
-        copyButton.textContent = originalText;
-      }, 1000);
-    }).catch(err => {
-      console.error('Failed to copy text: ', err);
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = responseText;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-    });
+  if (!responseText) return;
+
+  const copyButton = document.getElementById('copyButton');
+  const originalText = copyButton.textContent;
+
+  try {
+    // Modern Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(responseText);
+      this.showCopyFeedback(copyButton, originalText, true);
+    } else {
+      // Fallback using Selection API (modern alternative to execCommand)
+      if (window.getSelection && document.createRange) {
+        const range = document.createRange();
+        const tempElement = document.createElement('div');
+        tempElement.style.position = 'fixed';
+        tempElement.style.left = '-999999px';
+        tempElement.style.top = '-999999px';
+        tempElement.textContent = responseText;
+        document.body.appendChild(tempElement);
+        
+        range.selectNodeContents(tempElement);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Use the newer writeText if available, otherwise fall back to execCommand
+        const successful = document.execCommand('copy');
+        document.body.removeChild(tempElement);
+        selection.removeAllRanges();
+        
+        if (successful) {
+          this.showCopyFeedback(copyButton, originalText, true);
+        } else {
+          throw new Error('Copy command failed');
+        }
+      } else {
+        throw new Error('No copy method available');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to copy text:', error);
+    this.showCopyFeedback(copyButton, originalText, false);
   }
+}
+
+showCopyFeedback(copyButton, originalText, success) {
+  if (success) {
+    copyButton.textContent = '✓ Copied';
+    copyButton.style.background = '#4CAF50';
+    copyButton.style.color = 'white';
+  } else {
+    copyButton.textContent = '✗ Failed';
+    copyButton.style.background = '#f44336';
+    copyButton.style.color = 'white';
+  }
+  
+  setTimeout(() => {
+    copyButton.textContent = originalText;
+    copyButton.style.background = '#444';
+    copyButton.style.color = '#ccc';
+  }, 2000);
 }
 }
 
