@@ -4,14 +4,14 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import dotenv from "dotenv";
 import fs from "fs";
 import fsp from "fs/promises"; // <-- for async/await fs methods
-import path from "path";
-// import serverless from "serverless-http";
 
-
-
+import { systemPrompt,exampleResponse } from "../utils/prompt.js";
+import { extractJsonFromResponse, writeandAppendJsonToFile } from "../utils/json_utils.js";
+import { GoogleGenAI } from "@google/genai";
 // FFMPEG setup
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import { json } from "stream/consumers";
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // Initial setup
@@ -21,6 +21,7 @@ const UPLOADS_DIR = "/tmp/"; // use /tmp on Vercel
 
 
 
+const ai = new GoogleGenAI({});
 // CORS middleware - Allow requests from your frontend
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*'); // Allow all origins, or specify your frontend URL
@@ -166,6 +167,109 @@ app.post("/transcribe", upload.single("file"), async (req, res) => {
   }
 });
 
+app.get("/genai", async (req, res) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `${combinedPrompt}`,
+    });
+    console.log("GenAI response:", response.text);
+    const json = extractJsonFromResponse(response.text);
+    writeandAppendJsonToFile(json);
+    res.status(200).json({ response: json.toString(response) });
+  } catch (error) {
+    console.error("Error in /genai route:", error);
+
+    res.status(500).json({ error: "Failed to generate content", details: error.message });
+  }
+});
+
+app.post("/transcribe-and-generate", upload.single("file"), async (req, res) => {
+  console.log("Received a file upload request.");
+  if (!req.file) {
+    return res.status(400).json({ error: "No file was uploaded." });
+  }
+
+  const originalFilePath = req.file.path;
+  const convertedFilePath = `${originalFilePath}.mp3`;
+
+  try {
+    console.log(`Received file: ${req.file.originalname}. Starting conversion to MP3...`);
+
+    // 1. Convert uploaded file to MP3
+    await new Promise((resolve, reject) => {
+      ffmpeg(originalFilePath)
+        .toFormat("mp3")
+        .audioCodec('libmp3lame')
+        .audioBitrate(128)
+        .audioChannels(1)
+        .audioFrequency(22050)
+        .on("end", () => {
+          console.log("Conversion finished successfully.");
+          resolve();
+        })
+        .on("error", (err) => {
+          console.error("FFMPEG error:", err);
+          reject(new Error("FFMPEG conversion failed."));
+        })
+        .save(convertedFilePath);
+    });
+
+    // 2. Transcribe converted file using ElevenLabs
+    console.log("Sending converted file to ElevenLabs for transcription...");
+    const audioBuffer = await fsp.readFile(convertedFilePath);
+    const audioBlob = new Blob([audioBuffer], { type: "audio/mp3" });
+
+    const transcription = await elevenlabs.speechToText.convert({
+      file: audioBlob,
+      modelId: "scribe_v1",
+      tagAudioEvents: true,
+      languageCode: null,
+      diarize: true,
+      responseFormat: "json",
+    });
+
+    console.log("Transcription successful:", transcription.text || "No text found");
+
+    // 3. Generate content using AI based on transcription
+      const  combinedPrompt=`${systemPrompt}\n\n${transcription.text}\n\nPlease provide your analysis in the specified JSON format. Here is an example of the expected output:\n\n${exampleResponse}`
+      console.log("Combined Prompt for GenAI:", combinedPrompt);
+    const aiResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: combinedPrompt,
+    });
+
+    console.log("GenAI response:", aiResponse.text);
+
+    const json = extractJsonFromResponse(aiResponse.text);
+    writeandAppendJsonToFile(json);
+
+    // 4. Return both transcription and generated content
+    res.status(200).json({
+      success: true,
+      originalFileName: req.file.originalname,
+      transcription: transcription.text,
+      generatedContent: json.toString(aiResponse),
+    });
+
+  } catch (error) {
+    console.error("Error occurred:", error);
+    res.status(500).json({
+      error: "Failed to process the audio file and generate content.",
+      details: error.message,
+      statusCode: error.statusCode || 500
+    });
+  } finally {
+    // 5. Cleanup temporary files
+    console.log("Cleaning up temporary files...");
+    setTimeout(async () => {
+      try { if (fs.existsSync(originalFilePath)) console.log(`Deleted original file: ${originalFilePath}`); } catch (err) { console.error(err); }
+      try { if (fs.existsSync(convertedFilePath)) console.log(`Deleted converted file: ${convertedFilePath}`); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
+    }, 1000);
+  }
+});
+
+
 // Add error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
@@ -176,10 +280,10 @@ app.use((error, req, res, next) => {
 });
 
 
-// Export for Vercel
+
 // export const handler = serverless(app);
-// app.listen(process.env.PORT || 3000, () => {
-//   console.log(`Server is running on port ${process.env.PORT || 3000}`);
-// });
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Server is running on port ${process.env.PORT || 3000}`);
+});
 
 export default app;

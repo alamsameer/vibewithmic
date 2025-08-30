@@ -1,0 +1,29 @@
+{
+  "response_analysis": {
+    "lines": [
+      {
+        "original": "This is API testing for the voice recording.",
+        "improved_version": "This is API testing for the voice recording.",
+        "filler_words_list": [],
+        "repeated_phrases": [],
+        "vague_or_awkward_list": [],
+        "filler_words": 0,
+        "repetition": 0,
+        "vague_or_awkward": 0,
+        "confidence_level": 100
+      }
+    ],
+    "totals": {
+      "filler_words": 0,
+      "repetition": 0,
+      "vague_or_awkward": 0,
+      "overall_mistakes": 0,
+      "overall_confidence_level": 100
+    },
+    "metadata": {
+      "response_id": "resp_001",
+      "analyzed_at": "2024-07-30T10:30:00Z",
+      "analyzer_version": "1.0.0"
+    }
+  }
+}
