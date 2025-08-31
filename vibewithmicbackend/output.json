@@ -2,28 +2,54 @@
   "response_analysis": {
     "lines": [
       {
-        "original": "My name is Bert Mueller. I'm thirty five years old. I live in Bengaluru, India and I moved-",
-        "improved_version": "My name is Bert Mueller. I am thirty-five years old. I live in Bengaluru, India, where I recently moved.",
+        "original": "अच्छा तुम्हारा?",
+        "improved_version": "तुम्हारा?",
+        "filler_words_list": [
+          "अच्छा"
+        ],
+        "repeated_phrases": [],
+        "vague_or_awkward_list": [],
+        "filler_words": 1,
+        "repetition": 0,
+        "vague_or_awkward": 0,
+        "confidence_level": 85
+      },
+      {
+        "original": "चावल खाओ ना।",
+        "improved_version": "चावल खाओ।",
         "filler_words_list": [],
         "repeated_phrases": [],
         "vague_or_awkward_list": [
-          "and I moved-"
+          "ना (makes the phrase less direct/informal)"
         ],
         "filler_words": 0,
         "repetition": 0,
         "vague_or_awkward": 1,
+        "confidence_level": 90
+      },
+      {
+        "original": "हां हां हां हां।",
+        "improved_version": "हां।",
+        "filler_words_list": [],
+        "repeated_phrases": [
+          "हां (repeated 4 times)"
+        ],
+        "vague_or_awkward_list": [],
+        "filler_words": 0,
+        "repetition": 1,
+        "vague_or_awkward": 0,
         "confidence_level": 95
       }
     ],
     "totals": {
-      "filler_words": 0,
-      "repetition": 0,
+      "filler_words": 1,
+      "repetition": 1,
       "vague_or_awkward": 1,
-      "overall_mistakes": 1,
-      "overall_confidence_level": 95
+      "overall_mistakes": 3,
+      "overall_confidence_level": 90
     },
     "metadata": {
-      "response_id": "bert_mueller_intro_001",
+      "response_id": "hindi_resp_001",
       "analyzed_at": "2024-07-30T10:30:00Z",
       "analyzer_version": "1.0.0"
     }
