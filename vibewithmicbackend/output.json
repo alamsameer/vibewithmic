@@ -2,54 +2,52 @@
   "response_analysis": {
     "lines": [
       {
-        "original": "अच्छा तुम्हारा?",
-        "improved_version": "तुम्हारा?",
+        "original": "Turn off your phone and do not connect to the office.",
+        "improved_version": "Turn off your phone and do not connect to the office.",
+        "filler_words_list": [],
+        "repeated_phrases": [],
+        "vague_or_awkward_list": [],
+        "filler_words": 0,
+        "repetition": 0,
+        "vague_or_awkward": 0,
+        "confidence_level": 100
+      },
+      {
+        "original": "You know, go sharpen your act.",
+        "improved_version": "Go sharpen your act.",
         "filler_words_list": [
-          "अच्छा"
+          "You know"
         ],
         "repeated_phrases": [],
         "vague_or_awkward_list": [],
         "filler_words": 1,
         "repetition": 0,
         "vague_or_awkward": 0,
-        "confidence_level": 85
+        "confidence_level": 95
       },
       {
-        "original": "चावल खाओ ना।",
-        "improved_version": "चावल खाओ।",
+        "original": "I have five little rules that you can follow as you find your spark and bring-",
+        "improved_version": "I have five rules you can follow as you find your spark.",
         "filler_words_list": [],
         "repeated_phrases": [],
         "vague_or_awkward_list": [
-          "ना (makes the phrase less direct/informal)"
+          "bring-"
         ],
         "filler_words": 0,
         "repetition": 0,
         "vague_or_awkward": 1,
-        "confidence_level": 90
-      },
-      {
-        "original": "हां हां हां हां।",
-        "improved_version": "हां।",
-        "filler_words_list": [],
-        "repeated_phrases": [
-          "हां (repeated 4 times)"
-        ],
-        "vague_or_awkward_list": [],
-        "filler_words": 0,
-        "repetition": 1,
-        "vague_or_awkward": 0,
         "confidence_level": 95
       }
     ],
     "totals": {
       "filler_words": 1,
-      "repetition": 1,
+      "repetition": 0,
       "vague_or_awkward": 1,
-      "overall_mistakes": 3,
-      "overall_confidence_level": 90
+      "overall_mistakes": 2,
+      "overall_confidence_level": 96.7
     },
     "metadata": {
-      "response_id": "hindi_resp_001",
+      "response_id": "resp_001",
       "analyzed_at": "2024-07-30T10:30:00Z",
       "analyzer_version": "1.0.0"
     }

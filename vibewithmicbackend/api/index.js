@@ -4,15 +4,14 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import dotenv from "dotenv";
 import fs from "fs";
 import fsp from "fs/promises"; // <-- for async/await fs methods
-import cors from "cors";
-import { systemPrompt,exampleResponse,combinedPrompt } from "../utils/prompt.js";
+
+import { systemPrompt,exampleResponse } from "../utils/prompt.js";
 import { extractJsonFromResponse, writeandAppendJsonToFile } from "../utils/json_utils.js";
 import { GoogleGenAI } from "@google/genai";
 // FFMPEG setup
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { json } from "stream/consumers";
-
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // Initial setup
@@ -36,7 +35,7 @@ app.use((req, res, next) => {
     next();
   }
 });
-app.options("*", cors());
+
 
 // Ensure the uploads directory exists
 (async () => {
@@ -281,9 +280,10 @@ app.use((error, req, res, next) => {
 });
 
 
+
 // export const handler = serverless(app);
-// app.listen(process.env.PORT, () => {
-//   console.log(`Server is running on port ${process.env.PORT}`);
-// });
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Server is running on port ${process.env.PORT || 3000}`);
+});
 
 export default app;
