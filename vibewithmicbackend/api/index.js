@@ -288,8 +288,8 @@ app.use((error, req, res, next) => {
 
 
 // export const handler = serverless(app);
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-});
+// app.listen(process.env.PORT, () => {
+//   console.log(`Server is running on port ${process.env.PORT}`);
+// });
 
 export default app;
