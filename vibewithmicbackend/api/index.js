@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import fsp from "fs/promises"; // <-- for async/await fs methods
 
-import { systemPrompt,exampleResponse } from "../utils/prompt.js";
+import { systemPrompt,exampleResponse,combinedPrompt } from "../utils/prompt.js";
 import { extractJsonFromResponse, writeandAppendJsonToFile } from "../utils/json_utils.js";
 import { GoogleGenAI } from "@google/genai";
 // FFMPEG setup
@@ -233,7 +233,7 @@ app.post("/transcribe-and-generate", upload.single("file"), async (req, res) => 
 
     // 3. Generate content using AI based on transcription
       const  combinedPromptByuser=`${systemPrompt}\n\n${transcription.text}\n\nPlease provide your analysis in the specified JSON format. Here is an example of the expected output:\n\n${exampleResponse}`
-      console.log("Combined Prompt for GenAI:", combinedPrompt);
+      console.log("Combined Prompt for GenAI:", combinedPromptByuser);
     const aiResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: combinedPromptByuser,
