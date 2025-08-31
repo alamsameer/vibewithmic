@@ -4,7 +4,7 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import dotenv from "dotenv";
 import fs from "fs";
 import fsp from "fs/promises"; // <-- for async/await fs methods
-
+import cors from "cors";
 import { systemPrompt,exampleResponse,combinedPrompt } from "../utils/prompt.js";
 import { extractJsonFromResponse, writeandAppendJsonToFile } from "../utils/json_utils.js";
 import { GoogleGenAI } from "@google/genai";
@@ -12,6 +12,7 @@ import { GoogleGenAI } from "@google/genai";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { json } from "stream/consumers";
+
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 // Initial setup
@@ -19,8 +20,14 @@ dotenv.config();
 const app = express();
 const UPLOADS_DIR = "/tmp/"; // use /tmp on Vercel
 
+app.use(cors({
+  origin: "*", // Allow all domains
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization",
+  credentials: false // Should be false when origin is "*"
+}));
 
-
+app.options("*", cors());
 const ai = new GoogleGenAI({});
 // CORS middleware - Allow requests from your frontend
 app.use((req, res, next) => {

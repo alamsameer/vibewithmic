@@ -16,6 +16,7 @@
     "@elevenlabs/elevenlabs-js": "^2.9.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google/genai": "^1.16.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "fluent-ffmpeg": "^2.1.3",
