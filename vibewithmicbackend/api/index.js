@@ -175,7 +175,7 @@ app.get("/genai", async (req, res) => {
     });
     console.log("GenAI response:", response.text);
     const json = extractJsonFromResponse(response.text);
-    writeandAppendJsonToFile(json);
+    // writeandAppendJsonToFile(json);
     res.status(200).json({ response: json.toString(response) });
   } catch (error) {
     console.error("Error in /genai route:", error);
@@ -242,7 +242,7 @@ app.post("/transcribe-and-generate", upload.single("file"), async (req, res) => 
     console.log("GenAI response:", aiResponse.text);
 
     const json = extractJsonFromResponse(aiResponse.text);
-    writeandAppendJsonToFile(json);
+    // writeandAppendJsonToFile(json);
 
     // 4. Return both transcription and generated content
     res.status(200).json({
