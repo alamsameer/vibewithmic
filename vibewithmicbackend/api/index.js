@@ -20,14 +20,8 @@ dotenv.config();
 const app = express();
 const UPLOADS_DIR = "/tmp/"; // use /tmp on Vercel
 
-app.use(cors({
-  origin: "*", // Allow all domains
-  methods: "GET,POST,PUT,DELETE,OPTIONS",
-  allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization",
-  credentials: false // Should be false when origin is "*"
-}));
 
-app.options("*", cors());
+
 const ai = new GoogleGenAI({});
 // CORS middleware - Allow requests from your frontend
 app.use((req, res, next) => {
@@ -42,7 +36,7 @@ app.use((req, res, next) => {
     next();
   }
 });
-
+app.options("*", cors());
 
 // Ensure the uploads directory exists
 (async () => {
