@@ -232,11 +232,11 @@ app.post("/transcribe-and-generate", upload.single("file"), async (req, res) => 
     console.log("Transcription successful:", transcription.text || "No text found");
 
     // 3. Generate content using AI based on transcription
-      const  combinedPrompt=`${systemPrompt}\n\n${transcription.text}\n\nPlease provide your analysis in the specified JSON format. Here is an example of the expected output:\n\n${exampleResponse}`
+      const  combinedPromptByuser=`${systemPrompt}\n\n${transcription.text}\n\nPlease provide your analysis in the specified JSON format. Here is an example of the expected output:\n\n${exampleResponse}`
       console.log("Combined Prompt for GenAI:", combinedPrompt);
     const aiResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: combinedPrompt,
+      contents: combinedPromptByuser,
     });
 
     console.log("GenAI response:", aiResponse.text);
@@ -249,7 +249,7 @@ app.post("/transcribe-and-generate", upload.single("file"), async (req, res) => 
       success: true,
       originalFileName: req.file.originalname,
       transcription: transcription.text,
-      generatedContent: json.toString(aiResponse),
+      generatedContent: json,
     });
 
   } catch (error) {
